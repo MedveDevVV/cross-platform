@@ -6,7 +6,8 @@ import java.util.UUID;
 public abstract class Person implements Identifiable {
     private final UUID id;
     private String fullName;
-
+    private LocalDate dateOfBirth;
+    
     public Person(String surname, String name, String patronymic, LocalDate dateOfBirth) {
         this.id = UUID.randomUUID();
         this.fullName = String.join(" ", surname, name, patronymic);
@@ -23,7 +24,7 @@ public abstract class Person implements Identifiable {
         this.fullName = fullName;
     }
 
-    private LocalDate dateOfBirth;
+
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
