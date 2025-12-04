@@ -1,0 +1,35 @@
+# Spring - корневая секция для всех настроек Spring
+spring:
+  # Имя приложения (для логирования и мониторинга)
+  application:
+    name: auto-service
+
+  # Настройки подключения к базе данных
+  datasource:
+    # URL для подключения к PostgreSQL
+    # jdbc:postgresql:// - протокол JDBC для PostgreSQL
+    # localhost:5432 - где работает база (локально, порт 5432)
+    # autoservice_db - имя базы данных
+    url: jdbc:postgresql://localhost:5432/autoservice_db
+
+    # Логин для подключения к БД (стандартный для PostgreSQL)
+    username: postgres
+
+    # Пароль для подключения к БД
+    password: Ramzes22!!
+
+  # Настройки JPA (Java Persistence API) - для работы с БД
+  jpa:
+    # Настройки Hibernate (реализация JPA)
+    hibernate:
+      # ddl-auto - как Hibernate управляет схемой БД
+      # create-drop: создает таблицы при старте, удаляет при остановке
+      # ТОЛЬКО ДЛЯ РАЗРАБОТКИ! В проде используй 'validate' или 'none'
+      ddl-auto: create-drop
+
+    # Показывать SQL запросы в консоли (удобно для отладки)
+    show-sql: true
+
+# Настройки встроенного сервера (пока не используется, но будет нужен для REST)
+server:
+  port: 8080  # Порт, на котором будет работать приложение
