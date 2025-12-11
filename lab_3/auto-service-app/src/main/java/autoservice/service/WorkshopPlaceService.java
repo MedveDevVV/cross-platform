@@ -4,7 +4,6 @@ import autoservice.exception.*;
 import autoservice.model.WorkshopPlace;
 import autoservice.repository.WorkshopPlaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +26,10 @@ public class WorkshopPlaceService {
      */
     @Transactional
     public WorkshopPlace addPlace(WorkshopPlace place) {
-        try {
-            return workshopPlaceRepository.save(place);
-        } catch (DataIntegrityViolationException e) {
-            if(e.getCause().getMessage().matches("(?i).*duplicate.*")) {
-                throw new DuplicateEntityException("Рабочее место", "названием", place.getName());
-            }
-            throw new AutoServiceException("Ошибка при сохранении рабочего места", ErrorCodes.SYS_DATABASE);
+        if (workshopPlaceRepository.findByName(place.getName()).isPresent()) {
+            throw new DuplicateEntityException("Рабочее место", "названием", place.getName());
         }
+        return workshopPlaceRepository.save(place);
     }
 
     /**
