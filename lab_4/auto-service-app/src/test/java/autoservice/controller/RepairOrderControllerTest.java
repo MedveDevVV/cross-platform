@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -103,6 +105,7 @@ public class RepairOrderControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
     void createOrder_WithValidData_ShouldReturnCreated() throws Exception {
         // Arrange
         CreateRepairOrderRequest request = new CreateRepairOrderRequest(
@@ -127,6 +130,7 @@ public class RepairOrderControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/orders")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -136,6 +140,7 @@ public class RepairOrderControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER")
     void getOrderById_WithValidId_ShouldReturnOrder() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenReturn(order);
@@ -151,6 +156,7 @@ public class RepairOrderControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER")
     void getOrderById_WithInvalidId_ShouldReturnNotFound() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenThrow(new OrderNotFoundException(orderId));
@@ -164,6 +170,7 @@ public class RepairOrderControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
     void cancelOrder_WithValidId_ShouldReturnOk() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenReturn(order);
@@ -171,23 +178,27 @@ public class RepairOrderControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/orders/{id}/cancel", orderId)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
     void cancelOrder_WithInvalidId_ShouldReturnNotFound() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenThrow(new OrderNotFoundException(orderId));
 
         // Act & Assert
         mockMvc.perform(put("/api/orders/{id}/cancel", orderId)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode", is("NF_ORDER_001")));
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
     void closeOrder_WithValidId_ShouldReturnOk() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenReturn(order);
@@ -195,11 +206,13 @@ public class RepairOrderControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/orders/{id}/close", orderId)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
     void delayOrder_WithValidId_ShouldReturnOk() throws Exception {
         // Arrange
         Mockito.doThrow(new OrderNotFoundException(orderId))
@@ -207,6 +220,7 @@ public class RepairOrderControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/orders/{id}/delay", orderId)
+                        .with(csrf())
                         .param("days", "3")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -214,6 +228,7 @@ public class RepairOrderControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deleteOrder_WithValidId_ShouldReturnNoContent() throws Exception {
         // Arrange
         Mockito.when(orderService.findOrderByIdOrThrow(orderId)).thenReturn(order);
@@ -221,6 +236,7 @@ public class RepairOrderControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete("/api/orders/{id}", orderId)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }

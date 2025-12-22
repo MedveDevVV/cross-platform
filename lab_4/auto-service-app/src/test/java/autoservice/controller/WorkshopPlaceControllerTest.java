@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,6 +56,7 @@ public class WorkshopPlaceControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER")
     void getAllPlaces_ShouldReturnListOfPlaces() throws Exception {
         // Arrange
         List<WorkshopPlace> places = Collections.singletonList(place);
@@ -70,6 +73,7 @@ public class WorkshopPlaceControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER")
     void getPlaceById_WithValidId_ShouldReturnPlace() throws Exception {
         // Arrange
         Mockito.when(placeService.findById(placeId)).thenReturn(place);
@@ -84,6 +88,7 @@ public class WorkshopPlaceControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void createPlace_WithValidData_ShouldReturnCreated() throws Exception {
         // Arrange
         WorkshopPlaceDTO requestDTO = new WorkshopPlaceDTO(null, "Новый гараж");
@@ -95,6 +100,7 @@ public class WorkshopPlaceControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/workshop-places")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isCreated())

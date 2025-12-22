@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +27,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -61,6 +63,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER") // Добавляем аутентификацию
     void getAllMasters_ShouldReturnListOfMasters() throws Exception {
         // Arrange
         List<CarServiceMaster> masters = Collections.singletonList(master);
@@ -78,6 +81,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER") // Добавляем аутентификацию
     void getMasterById_WithValidId_ShouldReturnMaster() throws Exception {
         // Arrange
         Mockito.when(masterService.findById(testId)).thenReturn(master);
@@ -92,6 +96,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER") // Добавляем аутентификацию
     void getMasterById_WithInvalidId_ShouldThrowException() throws Exception {
         // Arrange
         UUID invalidId = UUID.randomUUID();
@@ -108,6 +113,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "MASTER") // Добавляем аутентификацию
     void searchByName_ShouldReturnMatchingMasters() throws Exception {
         // Arrange
         List<CarServiceMaster> masters = Collections.singletonList(master);
@@ -125,6 +131,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN") // Для создания нужна роль ADMIN
     void createMaster_WithValidData_ShouldReturnCreated() throws Exception {
         // Arrange
         CarServiceMasterDTO requestDTO = new CarServiceMasterDTO(
@@ -139,6 +146,7 @@ public class CarServiceMasterControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/masters")
+                        .with(csrf()) // Добавляем CSRF токен
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isCreated())
@@ -146,6 +154,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN") // Для обновления нужна роль ADMIN
     void updateMaster_WithValidData_ShouldReturnUpdatedMaster() throws Exception {
         // Arrange
         CarServiceMasterDTO updateDTO = new CarServiceMasterDTO(
@@ -160,6 +169,7 @@ public class CarServiceMasterControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/api/masters/{id}", testId)
+                        .with(csrf()) // Добавляем CSRF токен
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
                 .andExpect(status().isOk())
@@ -168,6 +178,7 @@ public class CarServiceMasterControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN") // Для удаления нужна роль ADMIN
     void deleteMaster_WithValidId_ShouldReturnNoContent() throws Exception {
         // Arrange
         Mockito.when(masterService.findById(testId)).thenReturn(master);
@@ -175,6 +186,7 @@ public class CarServiceMasterControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete("/api/masters/{id}", testId)
+                        .with(csrf()) // Добавляем CSRF токен
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
